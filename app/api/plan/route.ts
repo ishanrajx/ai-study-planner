@@ -1,16 +1,19 @@
 import { NextResponse } from "next/server";
 import { InferenceClient } from "@huggingface/inference";
 
-const token = process.env.HF_TOKEN;
-
-if (!token) {
-  throw new Error("HF_TOKEN is not configured.");
-}
-
-const hf = new InferenceClient(token);
-
 export async function POST(request: Request) {
   try {
+    const token = process.env["HF_TOKEN"];
+
+    if (!token) {
+      return NextResponse.json(
+        { error: "HF_TOKEN is not configured." },
+        { status: 500 }
+      );
+    }
+
+    const hf = new InferenceClient(token);
+
     const body = await request.json();
 
     const subject = String(body.subject ?? "").trim();
@@ -31,6 +34,7 @@ export async function POST(request: Request) {
     const today = new Date();
 
     const difference = exam.getTime() - today.getTime();
+
     const calculatedDays = Math.ceil(
       difference / (1000 * 60 * 60 * 24)
     );
